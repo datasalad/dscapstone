@@ -1,0 +1,61 @@
+---
+title: "Capstone"
+author: "Sergii Sorokolat"
+date: "7/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Define a function for reading from a file and sampling a small portion of the data
+
+```{r}
+readAndSampleFile <- function(fileName, sampleSize ) {
+    
+    con <- file(fileName, open = "r", encoding = "UTF-8")
+    lines <- readLines(con)
+    
+    idxs <- sample(1:length(lines), sampleSize)
+    vals <- c()
+    
+     for (i in 1:length(lines)) {
+        if (i %in% idxs) {
+           vals <- append(vals, lines[i])
+        }
+     }
+    close(con)
+    vals
+}
+```
+
+## read and sample
+
+```{r warning=FALSE}
+setwd("~/GitHub/dscapstone/")
+
+set.seed(7152018)
+
+## sample size
+s <- 50000
+## samples <- c()
+
+## samples <- append(samples, readAndSampleFile(fileName = "final/en_US/en_US.blogs.txt", s))
+## samples <- append(samples, readAndSampleFile(fileName = "final/en_US/en_US.news.txt", s))
+## samples <- append(samples, readAndSampleFile(fileName = "final/en_US/en_US.twitter.txt", s))
+
+## cleanup
+## gc()
+
+## saveRDS(samples, "samples150k.rds")
+
+samples <- readRDS("samples150k.rds")
+summary(samples)
+```
+
+## Profanity filtering
+https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
+
+
+
+
