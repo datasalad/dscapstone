@@ -32,7 +32,8 @@ readAndSampleFile <- function(fileName, sampleSize ) {
 ## read and sample
 
 ```{r warning=FALSE}
-setwd("~/GitHub/dscapstone/")
+setwd("~/Desktop/dscapstone/")
+##setwd("~/GitHub/dscapstone/")
 
 set.seed(7152018)
 
@@ -50,11 +51,39 @@ s <- 50000
 ## saveRDS(samples, "samples150k.rds")
 
 samples <- readRDS("samples150k.rds")
-summary(samples)
+## summary(samples)
 ```
 
 ## Profanity filtering
 https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
+
+```{r message=FALSE}
+library(tidyverse)
+
+filter <- read.csv("sanityfilter_en.txt", header = FALSE, sep = "\n", as.is = TRUE)$V1
+
+## to lowercase
+t <- tbl_df(samples)
+t <- mutate(t, value = str_to_lower(value))
+
+## build the grep filter
+f1 <- c()
+for (i in 1:length(filter)) {
+  ## \\<word\\>
+  word <- paste("\\<", filter[i] ,"\\>", sep = "")
+  f1 <- append(f1, word)
+}
+f <- paste(f1, sep = "", collapse = "|")
+t$sanity_failed <- grepl(paste("(", f, ")", sep = ""), t$value)
+##t$value <- gsub(paste("(", f, ")", sep = ""), "0", t$value, fixed = TRUE)
+
+##t <-readRDS("samples150k-sanityfilter.rds")
+nrow(t[t$sanity_failed,])
+
+saveRDS(t, "filtered.rds")
+
+```
+
 
 
 
