@@ -29,9 +29,21 @@ readAndSampleFile <- function(fileName, sampleSize ) {
 }
 ```
 
+```{r}
+removeBadWords <- function(t, pattern) {
+  for (i in 1:nrow(t)) {
+    if (t[i, 2] == TRUE) { ## sanity failed
+      t[i,1] <- gsub(pattern, "*", t[i,1])
+    }
+  }
+  t
+}
+```
+
 ## read and sample
 
 ```{r warning=FALSE}
+library(tidyverse)
 setwd("~/Desktop/dscapstone/")
 ##setwd("~/GitHub/dscapstone/")
 
@@ -57,10 +69,9 @@ samples <- readRDS("samples150k.rds")
 ## Profanity filtering
 https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words
 
-```{r message=FALSE}
-library(tidyverse)
+```{r message=FALSE, eval=FALSE}
 
-filter <- read.csv("sanityfilter_en.txt", header = FALSE, sep = "\n", as.is = TRUE)$V1
+ filter <- read.csv("sanityfilter_en.txt", header = FALSE, sep = "\n", as.is = TRUE)$V1
 
 ## to lowercase
 t <- tbl_df(samples)
@@ -75,14 +86,43 @@ for (i in 1:length(filter)) {
 }
 f <- paste(f1, sep = "", collapse = "|")
 t$sanity_failed <- grepl(paste("(", f, ")", sep = ""), t$value)
-##t$value <- gsub(paste("(", f, ")", sep = ""), "0", t$value, fixed = TRUE)
+# ##t$value <- gsub(paste("(", f, ")", sep = ""), "0", t$value, fixed = TRUE)
 
 ##t <-readRDS("samples150k-sanityfilter.rds")
-nrow(t[t$sanity_failed,])
-
+# nrow(t[t$sanity_failed,])
+#
 saveRDS(t, "filtered.rds")
 
+
+
 ```
+
+```{r eval=FALSE}
+samplesFiltered <- readRDS("filtered.rds")
+t <- tbl_df(samplesFiltered)
+nrow(t[t$sanity_failed,])
+
+filter <- read.csv("sanityfilter_en.txt", header = FALSE, sep = "\n", as.is = TRUE)$V1
+f1 <- c()
+for (i in 1:length(filter)) {
+  ## \\<word\\>
+  word <- paste("\\<", filter[i] ,"\\>", sep = "")
+  f1 <- append(f1, word)
+}
+f <- paste(f1, sep = "", collapse = "|")
+
+t <- removeBadWords(t, paste("(", f, ")", sep = ""))
+saveRDS(t, "preprocessed_needs_rm_spec_chars.rds")
+```
+
+
+```{r}
+preprocessed <- readRDS("preprocessed_needs_rm_spec_chars.rds")
+t <- tbl_df(preprocessed)
+nrow(t[t$sanity_failed,])
+head(filter(t, sanity_failed == TRUE))
+```
+
 
 
 

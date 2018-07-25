@@ -146,9 +146,26 @@ $(document).ready(function () {
     close(con)
     vals
 }</code></pre>
+<pre class="r"><code>removeBadWords &lt;- function(t, pattern) {
+  for (i in 1:nrow(t)) {
+    if (t[i, 2] == TRUE) { ## sanity failed
+      t[i,1] &lt;- gsub(pattern, &quot;*&quot;, t[i,1])
+    }
+  }
+  t
+}</code></pre>
 </div>
 <div id="read-and-sample" class="section level2">
 <h2>read and sample</h2>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 2.2.1     ✔ purrr   0.2.5
+## ✔ tibble  1.4.2     ✔ dplyr   0.7.5
+## ✔ tidyr   0.8.1     ✔ stringr 1.3.1
+## ✔ readr   1.1.1     ✔ forcats 0.3.0</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>setwd(&quot;~/Desktop/dscapstone/&quot;)
 ##setwd(&quot;~/GitHub/dscapstone/&quot;)
 
@@ -173,22 +190,56 @@ samples &lt;- readRDS(&quot;samples150k.rds&quot;)
 <div id="profanity-filtering" class="section level2">
 <h2>Profanity filtering</h2>
 <p><a href="https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words" class="uri">https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words</a></p>
-<pre class="r"><code>library(tidyverse)
-
-filter &lt;- read.csv(&quot;sanityfilter_en.txt&quot;, header = FALSE, sep = &quot;\n&quot;, as.is = TRUE)$V1
+<pre class="r"><code> filter &lt;- read.csv(&quot;sanityfilter_en.txt&quot;, header = FALSE, sep = &quot;\n&quot;, as.is = TRUE)$V1
 
 ## to lowercase
 t &lt;- tbl_df(samples)
 t &lt;- mutate(t, value = str_to_lower(value))
 
-f &lt;- paste(filter, sep = &quot;&quot;, collapse = &quot;|&quot;)
-t$sanity_failed &lt;- grepl(paste(&quot;(&quot;, f, &quot;)&quot;, sep = &quot;&quot;), t$value, fixed = TRUE)
-t$value &lt;- gsub(paste(&quot;(&quot;, f, &quot;)&quot;, sep = &quot;&quot;), &quot;0&quot;, t$value, fixed = TRUE)
+## build the grep filter
+f1 &lt;- c()
+for (i in 1:length(filter)) {
+  ## \\&lt;word\\&gt;
+  word &lt;- paste(&quot;\\&lt;&quot;, filter[i] ,&quot;\\&gt;&quot;, sep = &quot;&quot;)
+  f1 &lt;- append(f1, word)
+}
+f &lt;- paste(f1, sep = &quot;&quot;, collapse = &quot;|&quot;)
+t$sanity_failed &lt;- grepl(paste(&quot;(&quot;, f, &quot;)&quot;, sep = &quot;&quot;), t$value)
+# ##t$value &lt;- gsub(paste(&quot;(&quot;, f, &quot;)&quot;, sep = &quot;&quot;), &quot;0&quot;, t$value, fixed = TRUE)
 
 ##t &lt;-readRDS(&quot;samples150k-sanityfilter.rds&quot;)
+# nrow(t[t$sanity_failed,])
+#
+saveRDS(t, &quot;filtered.rds&quot;)</code></pre>
+<pre class="r"><code>samplesFiltered &lt;- readRDS(&quot;filtered.rds&quot;)
+t &lt;- tbl_df(samplesFiltered)
+nrow(t[t$sanity_failed,])
+
+filter &lt;- read.csv(&quot;sanityfilter_en.txt&quot;, header = FALSE, sep = &quot;\n&quot;, as.is = TRUE)$V1
+f1 &lt;- c()
+for (i in 1:length(filter)) {
+  ## \\&lt;word\\&gt;
+  word &lt;- paste(&quot;\\&lt;&quot;, filter[i] ,&quot;\\&gt;&quot;, sep = &quot;&quot;)
+  f1 &lt;- append(f1, word)
+}
+f &lt;- paste(f1, sep = &quot;&quot;, collapse = &quot;|&quot;)
+
+t &lt;- removeBadWords(t, paste(&quot;(&quot;, f, &quot;)&quot;, sep = &quot;&quot;))
+saveRDS(t, &quot;preprocessed_needs_rm_spec_chars.rds&quot;)</code></pre>
+<pre class="r"><code>preprocessed &lt;- readRDS(&quot;preprocessed_needs_rm_spec_chars.rds&quot;)
+t &lt;- tbl_df(preprocessed)
 nrow(t[t$sanity_failed,])</code></pre>
-<pre><code>## [1] 0</code></pre>
-<pre class="r"><code>saveRDS(t, &quot;filtered.rds&quot;)</code></pre>
+<pre><code>## [1] 3485</code></pre>
+<pre class="r"><code>head(filter(t, sanity_failed == TRUE))</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##   value                                                      sanity_failed
+##   &lt;chr&gt;                                                      &lt;lgl&gt;        
+## 1 is for you to shut the * up.                               TRUE         
+## 2 article 8 does not always work though. a * illegal immigr… TRUE         
+## 3 but sonofabitch, that * is still driving me crazy. now th… TRUE         
+## 4 oh * hell, seriously??                                     TRUE         
+## 5 &quot;following on from here and here. sorry for dragging it o… TRUE         
+## 6 the enjoyment factor of this show… it may not have been o… TRUE</code></pre>
 </div>
 
 
