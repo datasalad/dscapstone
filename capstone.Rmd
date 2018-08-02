@@ -42,7 +42,7 @@ removeBadWords <- function(t, pattern) {
 
 ## read and sample
 
-```{r warning=FALSE}
+```{r warning=FALSE, message=FALSE}
 library(tidyverse)
 setwd("~/Desktop/dscapstone/")
 ##setwd("~/GitHub/dscapstone/")
@@ -116,11 +116,57 @@ saveRDS(t, "preprocessed_needs_rm_spec_chars.rds")
 ```
 
 
-```{r}
-preprocessed <- readRDS("preprocessed_needs_rm_spec_chars.rds")
-t <- tbl_df(preprocessed)
+```{r message=FALSE, warning=FALSE, cache=FALSE}
+library(tidyverse)
+library(tm)
+library(RWeka)
+
+t <- tbl_df(readRDS("preprocessed_needs_rm_spec_chars.rds"))
 nrow(t[t$sanity_failed,])
-head(filter(t, sanity_failed == TRUE))
+
+corp <- Corpus(VectorSource(t$value))
+
+corp <- tm_map(corp, content_transformer(function(x, pattern) gsub(pattern, " ", x)),  "“|”|–|…|‘|’")
+corp <- tm_map(corp, content_transformer(removePunctuation))
+corp <- tm_map(corp, content_transformer(removeNumbers))
+
+corp <- tm_map(corp, stripWhitespace)
+
+ngramtoken1 <- function(x) NGramTokenizer(x, Weka_control(min = 1, max = 1))
+ngramtoken2 <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
+ngramtoken3 <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+
+
+ngrammatr1 <- TermDocumentMatrix(corp, control = list(tokenize = ngramtoken1))
+ngrammatr2 <- TermDocumentMatrix(corp, control = list(tokenize = ngramtoken2))
+ngrammatr3 <- TermDocumentMatrix(corp, control = list(tokenize = ngramtoken3))
+
+
+# unigrams <- NGramTokenizer(corp, Weka_control(min=1, max=1))
+# bigrams <- NGramTokenizer(corp, Weka_control(min = 2, max = 2, delimiters = " \\r\\n\\t.,;:\"()?!"))
+# trigrams <- NGramTokenizer(corp, Weka_control(min = 3, max = 3, delimiters = " \\r\\n\\t.,;:\"()?!"))
+# quadgrams <- NGramTokenizer(corp, Weka_control(min = 4, max = 4, delimiters = " \\r\\n\\t.,;:\"()?!"))
+
+###data.frame(text = sapply(corp, as.character), stringsAsFactors = FALSE)
+
+gc()
+
+```
+
+
+```{r}
+library(tm)
+library(RWeka)
+freqTerms <- findFreqTerms(ngrammatr2, lowfreq = 7000)
+termFrequency <- rowSums(as.matrix(ngrammatr2[freqTerms,]))
+termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
+
+g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
+    geom_bar(stat = "identity") +  coord_flip() +
+    theme(legend.title=element_blank()) +
+    xlab("Ngram") + ylab("Frequency") +
+    labs(title = "Top ngrams by frequency")
+print(g)
 ```
 
 
