@@ -152,13 +152,12 @@ gc()
 ```{r}
 library(tm)
 library(RWeka)
-freqTerms <- findFreqTerms(ngrammatr1, lowfreq = 6400)
+freqTerms <- findFreqTerms(ngrammatr1, lowfreq = 6500)
 termFrequency <- rowSums(as.matrix(ngrammatr1[freqTerms,]))
 termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
 
 g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
-    geom_bar(stat = "identity") +  coord_flip() +
-    theme(legend.title=element_blank()) +
+    geom_bar(stat = "identity") + coord_flip() +
     xlab("Ngram") + ylab("Frequency") +
     labs(title = "Top ngrams by frequency")
 print(g)
@@ -175,8 +174,7 @@ termFrequency <- rowSums(as.matrix(ngrammatr2[freqTerms,]))
 termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
 
 g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
-    geom_bar(stat = "identity") +  coord_flip() +
-    theme(legend.title=element_blank()) +
+    geom_bar(stat = "identity") + coord_flip() +
     xlab("Ngram") + ylab("Frequency") +
     labs(title = "Top ngrams by frequency")
 print(g)
@@ -194,11 +192,11 @@ termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
 
 g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
     geom_bar(stat = "identity") +  coord_flip() +
-    theme(legend.title=element_blank()) +
     xlab("Ngram") + ylab("Frequency") +
     labs(title = "Top ngrams by frequency")
-print(g)
-```
+
+g
+
 
 
 
