@@ -42,35 +42,35 @@ readAndSampleFile <- function(fileName, sampleSize) {
 Summary of the original dataset:
 ```{r warning=FALSE, message=FALSE}
 
-setwd("~/GitHub/dscapstone")
+setwd("~/Desktop/dscapstone/")
 
-bl <- readLines("final/en_US/en_US.blogs.txt")
-nw <- readLines("final/en_US/en_US.news.txt")
-tw <- readLines("final/en_US/en_US.twitter.txt")
-
-blWords <- sum(sapply(gregexpr("\\S+", bl), length))
-nwWords <- sum(sapply(gregexpr("\\S+", nw), length))
-twWords <- sum(sapply(gregexpr("\\S+", tw), length))
-
-b <- file.info("final/en_US/en_US.blogs.txt")$size / 1024 / 1024
-n <- file.info("final/en_US/en_US.news.txt")$size / 1024 / 1024
-t <- file.info("final/en_US/en_US.twitter.txt")$size / 1024 / 1024
-
-
-blLength <- length(bl)
-nwLength <- length(nw)
-twLength <- length(tw)
-
-
-d <- data.frame(file_name = c("en_US.blogs.txt","en_US.news.txt","en_US.twitter.txt"),
-        size = c(round(b, digits = 3), 
-                     round(n,digits = 3), 
-                     round(t, digits = 3)),
-        linesCount = c(blLength, nwLength, twLength),
-        wordsCount = c(blWords, nwWords, twWords))
-
-colnames(d) <- c("File", "File Size (Mb))", "Line Count", "Word Count")
-print(d)
+# bl <- readLines("final/en_US/en_US.blogs.txt")
+# nw <- readLines("final/en_US/en_US.news.txt")
+# tw <- readLines("final/en_US/en_US.twitter.txt")
+# 
+# blWords <- sum(sapply(gregexpr("\\S+", bl), length))
+# nwWords <- sum(sapply(gregexpr("\\S+", nw), length))
+# twWords <- sum(sapply(gregexpr("\\S+", tw), length))
+# 
+# b <- file.info("final/en_US/en_US.blogs.txt")$size / 1024 / 1024
+# n <- file.info("final/en_US/en_US.news.txt")$size / 1024 / 1024
+# t <- file.info("final/en_US/en_US.twitter.txt")$size / 1024 / 1024
+# 
+# 
+# blLength <- length(bl)
+# nwLength <- length(nw)
+# twLength <- length(tw)
+# 
+# 
+# d <- data.frame(file_name = c("en_US.blogs.txt","en_US.news.txt","en_US.twitter.txt"),
+#         size = c(round(b, digits = 3), 
+#                      round(n,digits = 3), 
+#                      round(t, digits = 3)),
+#         linesCount = c(blLength, nwLength, twLength),
+#         wordsCount = c(blWords, nwWords, twWords))
+# 
+# colnames(d) <- c("File", "File Size (Mb))", "Line Count", "Word Count")
+# print(d)
 
 ```
 
@@ -197,6 +197,11 @@ gc()
 
 ```
 
+```{r}
+preprocessed <- NULL
+
+```
+
 
 ### Unigrams
 ```{r}
@@ -206,6 +211,8 @@ library(RWeka)
 freqTerms <- findFreqTerms(ngrammatr1, lowfreq = 6500)
 termFrequency <- rowSums(as.matrix(ngrammatr1[freqTerms,]))
 termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
+
+preprocessed$termFrequency1 <- termFrequency
 
 g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
     geom_bar(stat = "identity") + coord_flip() +
@@ -225,6 +232,8 @@ freqTerms <- findFreqTerms(ngrammatr2, lowfreq = 2400)
 termFrequency <- rowSums(as.matrix(ngrammatr2[freqTerms,]))
 termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
 
+preprocessed$termFrequency2 <- termFrequency
+
 g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
     geom_bar(stat = "identity") + coord_flip() +
     xlab("Ngram") + ylab("Frequency") +
@@ -242,6 +251,8 @@ freqTerms <- findFreqTerms(ngrammatr3, lowfreq = 350)
 termFrequency <- rowSums(as.matrix(ngrammatr3[freqTerms,]))
 termFrequency <- data.frame(ngrm=names(termFrequency), frequency=termFrequency)
 
+preprocessed$termFrequency3 <- termFrequency
+
 g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
     geom_bar(stat = "identity") +  coord_flip() +
     xlab("Ngram") + ylab("Frequency") +
@@ -257,5 +268,16 @@ g
 3. Develop Shiny app to make word predictions based on user's input.
 
 
+## Save preprocessed data
+
+```{r}
+
+preprocessed$corpus <- corp 
+preprocessed$ngrammatr1 <- ngrammatr1
+preprocessed$ngrammatr2 <- ngrammatr2
+preprocessed$ngrammatr3 <- ngrammatr3
+
+saveRDS(preprocessed, "preprocessed.rds")
+```
 
 

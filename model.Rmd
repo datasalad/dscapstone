@@ -1,0 +1,60 @@
+---
+title: "Capstone Model"
+author: "Sergii Sorokolat"
+date: "8/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Read preprocessed data
+
+```{r cache=TRUE, cache.extra = R.version.string}
+
+# preprocessed$corpus <- corp 
+# preprocessed$ngrammatr1 <- ngrammatr1
+# preprocessed$ngrammatr2 <- ngrammatr2
+# preprocessed$ngrammatr3 <- ngrammatr3
+# preprocessed$termFrequency1 <- termFrequency
+# preprocessed$termFrequency2 <- termFrequency
+# preprocessed$termFrequency3 <- termFrequency
+
+preprocessed <- readRDS("preprocessed.rds")
+```
+
+```{r message=FALSE, warning=FALSE,}
+library(tm)
+library(RWeka)
+library(tidyverse)
+```
+
+
+```{r cache=TRUE}
+
+plotFreqs <- function(termFrequency, x) {
+  g <- ggplot(termFrequency, aes(x=reorder(ngrm, frequency), y=frequency)) +
+    geom_bar(stat = "identity") + coord_flip() +
+    xlab(x) + ylab("Frequency") +
+    labs(title = "Top ngrams by frequency") + theme_bw()
+g
+}
+
+
+plotFreqs(preprocessed$termFrequency1, "1 - Ngram")
+plotFreqs(preprocessed$termFrequency2, "2 - Ngram")
+plotFreqs(preprocessed$termFrequency3, "3 - Ngram")
+
+```
+
+
+## Buid the model 
+
+```{r}
+##summary(preprocessed)
+```
+
+
+
