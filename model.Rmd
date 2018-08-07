@@ -53,8 +53,36 @@ plotFreqs(preprocessed$termFrequency3, "3 - Ngram")
 ## Buid the model 
 
 ```{r}
-##summary(preprocessed)
+library(topicmodels)
+inspect(preprocessed$ngrammatr2)
+
+# Generate 1-gram, bigram, and trigram matrices.
+# By summing frequency counts, generate a 2-column table of unique ngrams by frequencies (“N-gram Frequency Table”).
+# Match a n-word character string with the appropriate n+1 gram entry in the N-gram Frequency Table. For example, a two-word string should be matched with its corresponding entry in a tri-gram table.
+# If there is a match, propose high frequency words to the user. Continuing the previous example, a match should be the last word of the n-gram.
+
+
+
+
+# n-gram Model and Prediction
+# Based on this exploratory analysis, I now sketch a basic algorithm for text prediction using n-gram tables.
+# 
+# 1, 2, 3 and 4 n-gram tables are stored as text files.
+# Only n-grams that have fequency higher or equal to 2 are kept in the model.
+# The n-gram tables are loaded from the text files.
+# For a string of text that is input into the predictor the prediction algorithm performs a search on each n-gram table, starting with the 4-gram table.
+# From the imput text, the last three terms are obtained and searched in the 4-gram table. If one or more matches are found, then the algorithm outputs the best predictions for the next word given those three terms.
+# If no match is found in the 4-gram table, then the search continues in the 3-gram table using the last two words from the input. And so on. If no match is found, the prediction is then the most common one-gram (single terms).
+# For instance, a prediction for “and a case of” would be:
+# 
+# input.text <- "case of"
+# predict.ngram(input.text)
+# case of the   case of a  case of an 
+#          26           8           4 
+         
 ```
+
+
 
 
 
